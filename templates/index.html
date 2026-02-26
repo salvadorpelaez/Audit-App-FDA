@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Comparison App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .input-panel h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        select {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .regulation-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .compliance-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .compliance-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .compliance-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .compliance-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-compliant {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-non-compliant {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .compliance-details {
+            padding: 20px;
+        }
+
+        .requirement-text {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .findings {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .findings h4 {
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .finding-item {
+            padding: 5px 0;
+            color: #6c757d;
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .score-fill.high {
+            background: #28a745;
+        }
+
+        .score-fill.medium {
+            background: #ffc107;
+        }
+
+        .score-fill.low {
+            background: #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .sample-data-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .sample-data-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Audit Comparison App</h1>
+            <p class="subtitle">Compare applications against regulatory requirements</p>
+        </header>
+
+        <main class="main-content">
+            <div class="input-section">
+                <div class="input-panel">
+                    <h3>📋 Application Details</h3>
+                    <div class="form-group">
+                        <label for="applicationData">Application JSON:</label>
+                        <textarea id="applicationData" rows="12" placeholder='Enter application details in JSON format...'>{
+  "product_name": "AxiomTrack Mobile",
+  "intended_use": "A digital platform for patients to log inflammation levels and limb swelling. Users can export data logs for physician review.",
+  "features": [
+    "Manual input for swelling diameter",
+    "Photo upload of affected area",
+    "Automated 'Severity Score' based on user-entered metrics",
+    "Direct messaging to healthcare providers"
+  ],
+  "technical_infrastructure": {
+    "hosting": "AWS (HIPAA-compliant S3 & EC2)",
+    "database": "PostgreSQL with encryption-at-rest"
+  }
+}</textarea>
+                        <button class="sample-data-btn" onclick="loadSampleData()">Load Sample Data</button>
+                    </div>
+                </div>
+
+                <div class="input-panel">
+                    <h3>⚖️ Regulatory Framework</h3>
+                    <div class="form-group">
+                        <label for="regulationSelect">Select Regulation:</label>
+                        <select id="regulationSelect">
+                            <option value="">Choose a regulation...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Available Regulations:</label>
+                        <ul style="margin-left: 20px; color: #6c757d;">
+                            <li>HIPAA - Health Information Privacy</li>
+                            <li>FDA Software - Medical Device Guidelines</li>
+                            <li>GDPR Health - EU Health Data Protection</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <button class="analyze-btn" onclick="analyzeCompliance()">🔍 Analyze Compliance</button>
+
+            <div id="loading" class="loading" style="display: none;">
+                Analyzing compliance...
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <div id="results" class="results-section">
+                <!-- Results will be populated here -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentRegulations = [];
+
+        // Load regulations on page load
+        window.addEventListener('load', loadRegulations);
+
+        async function loadRegulations() {
+            try {
+                const response = await fetch('/api/regulations');
+                const data = await response.json();
+                currentRegulations = data.regulations;
+                
+                const select = document.getElementById('regulationSelect');
+                select.innerHTML = '<option value="">Choose a regulation...</option>';
+                
+                data.regulations.forEach(reg => {
+                    const option = document.createElement('option');
+                    option.value = reg.key;
+                    option.textContent = reg.title;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                showError('Error loading regulations: ' + error.message);
+            }
+        }
+
+        function loadSampleData() {
+            const sampleData = {
+                "product_name": "AxiomTrack Mobile",
+                "intended_use": "A digital platform for patients to log inflammation levels and limb swelling. Users can export data logs for physician review.",
+                "features": [
+                    "Manual input for swelling diameter",
+                    "Photo upload of affected area",
+                    "Automated 'Severity Score' based on user-entered metrics",
+                    "Direct messaging to healthcare providers"
+                ],
+                "technical_infrastructure": {
+                    "hosting": "AWS (HIPAA-compliant S3 & EC2)",
+                    "database": "PostgreSQL with encryption-at-rest"
+                }
+            };
+            
+            document.getElementById('applicationData').value = JSON.stringify(sampleData, null, 2);
+        }
+
+        async function analyzeCompliance() {
+            const applicationData = document.getElementById('applicationData').value;
+            const regulationName = document.getElementById('regulationSelect').value;
+            
+            if (!applicationData || !regulationName) {
+                showError('Please provide both application data and select a regulation');
+                return;
+            }
+            
+            let parsedData;
+            try {
+                parsedData = JSON.parse(applicationData);
+            } catch (error) {
+                showError('Invalid JSON format in application data');
+                return;
+            }
+            
+            showLoading(true);
+            hideError();
+            
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        application: parsedData,
+                        regulation: regulationName
+                    })
+                });
+                
+                const results = await response.json();
+                
+                if (results.error) {
+                    showError(results.error);
+                } else {
+                    displayResults(results);
+                }
+            } catch (error) {
+                showError('Error analyzing compliance: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            let html = `
+                <div class="regulation-header">
+                    <h2>${results.regulation_title}</h2>
+                    <p>Compliance analysis for: <strong>${results.application.product_name || 'Unknown Application'}</strong></p>
+                </div>
+            `;
+            
+            results.compliance_results.forEach(result => {
+                const statusClass = result.status === 'COMPLIANT' ? 'compliant' : 
+                                  result.status === 'PARTIALLY_COMPLIANT' ? 'partial' : 'non-compliant';
+                
+                const scoreClass = result.compliance_score >= 70 ? 'high' : 
+                                 result.compliance_score >= 40 ? 'medium' : 'low';
+                
+                html += `
+                    <div class="compliance-item">
+                        <div class="compliance-header">
+                            <div class="compliance-title">${result.section}</div>
+                            <div class="compliance-status status-${statusClass}">${result.status.replace('_', ' ')}</div>
+                        </div>
+                        <div class="compliance-details">
+                            <div class="requirement-text">
+                                <strong>Requirement:</strong> ${result.requirement}
+                            </div>
+                            <div class="requirement-text">
+                                <strong>Details:</strong> ${result.details}
+                            </div>
+                            
+                            <div class="score-bar">
+                                <div class="score-fill ${scoreClass}" style="width: ${result.compliance_score}%"></div>
+                            </div>
+                            <div style="text-align: center; margin: 5px 0; font-size: 14px; color: #6c757d;">
+                                Compliance Score: ${result.compliance_score}%
+                            </div>
+                            
+                            ${result.findings.length > 0 ? `
+                                <div class="findings">
+                                    <h4>Findings:</h4>
+                                    ${result.findings.map(finding => `<div class="finding-item">• ${finding}</div>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('active');
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
