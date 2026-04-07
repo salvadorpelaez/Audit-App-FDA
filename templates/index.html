@@ -284,7 +284,8 @@
     "database": "PostgreSQL with encryption-at-rest"
   }
 }</textarea>
-                        <button class="sample-data-btn" onclick="loadSampleData()">Load Sample Data</button>
+                        <button class="sample-data-btn" onclick="loadSampleData()">Load Sample 1 — AxiomTrack</button>
+                        <button class="sample-data-btn" onclick="loadSampleData2()" style="margin-top: 8px;">Load Sample 2 — NeuroPulse</button>
                     </div>
                 </div>
 
@@ -305,9 +306,7 @@
                             <li>21 CFR 880 - Medical Device Classifications</li>
                         </ul>
                     </div>
-                    <div class="form-group">
-                        <button class="sample-data-btn" onclick="loadFDAData()">View FDA Devices</button>
-                    </div>
+
                 </div>
             </div>
 
@@ -367,6 +366,29 @@
                 }
             };
             
+            document.getElementById('applicationData').value = JSON.stringify(sampleData, null, 2);
+        }
+
+        function loadSampleData2() {
+            const sampleData = {
+                "product_name": "NeuroPulse",
+                "intended_use": "An AI-powered mobile platform for continuous cognitive and mental health monitoring. Designed for clinical use by psychiatrists and neurologists to track patient mood, cognitive load, and behavioral patterns between appointments.",
+                "features": [
+                    "Daily mood and anxiety self-assessment questionnaires",
+                    "AI-generated cognitive decline risk score based on response patterns",
+                    "Passive behavioral data collection (screen time, typing cadence, sleep via wearable API)",
+                    "Encrypted clinician dashboard with trend analysis and alerts",
+                    "Patient consent management and data deletion portal",
+                    "Audit log of all data access events"
+                ],
+                "technical_infrastructure": {
+                    "hosting": "Azure Government Cloud (HIPAA BAA in place)",
+                    "database": "SQL Server with AES-256 encryption-at-rest and TLS 1.3 in transit",
+                    "ai_model": "On-device inference — no raw patient data sent to external AI APIs",
+                    "access_controls": "Role-based access control (RBAC), MFA required for all clinician accounts"
+                }
+            };
+
             document.getElementById('applicationData').value = JSON.stringify(sampleData, null, 2);
         }
 
