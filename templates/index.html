@@ -302,7 +302,11 @@
                             <li>HIPAA - Health Information Privacy</li>
                             <li>FDA Software - Medical Device Guidelines</li>
                             <li>GDPR Health - EU Health Data Protection</li>
+                            <li>21 CFR 880 - Medical Device Classifications</li>
                         </ul>
+                    </div>
+                    <div class="form-group">
+                        <button class="sample-data-btn" onclick="loadFDAData()">View FDA Devices</button>
                     </div>
                 </div>
             </div>
@@ -364,6 +368,26 @@
             };
             
             document.getElementById('applicationData').value = JSON.stringify(sampleData, null, 2);
+        }
+
+        async function loadFDAData() {
+            try {
+                const response = await fetch('/api/fda-devices');
+                const data = await response.json();
+                
+                let fdaInfo = "FDA Device Classifications:\n\n";
+                data.regulations.forEach(device => {
+                    fdaInfo += `${device.name} (${device.id})\n`;
+                    fdaInfo += `Classification: ${device.classification}\n`;
+                    fdaInfo += `Controls: ${device.controls}\n`;
+                    fdaInfo += `Exemptions: ${device.exemptions.length > 0 ? device.exemptions.join(', ') : 'None'}\n`;
+                    fdaInfo += `Description: ${device.full_text}\n\n`;
+                });
+                
+                alert(fdaInfo);
+            } catch (error) {
+                showError('Error loading FDA data: ' + error.message);
+            }
         }
 
         async function analyzeCompliance() {

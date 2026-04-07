@@ -70,7 +70,55 @@ REGULATIONS = {
                 "details": "Provide mechanisms for data access and deletion requests"
             }
         ]
+    },
+    "21_CFR_880": {
+        "title": "21 CFR Part 880 - General Hospital, Personal Use, and Miscellaneous Devices",
+        "requirements": [
+            {
+                "section": "Device Classification",
+                "requirement": "Proper classification of medical devices",
+                "details": "Devices must be classified as Class I, II, or III based on risk"
+            },
+            {
+                "section": "Regulatory Controls",
+                "requirement": "Appropriate controls based on classification",
+                "details": "General Controls for Class I, Special Controls for Class II, PMA for Class III"
+            },
+            {
+                "section": "Exemptions",
+                "requirement": "Identify applicable exemptions",
+                "details": "Some devices may be exempt from premarket notification or QSR requirements"
+            },
+            {
+                "section": "Device Definition",
+                "requirement": "Clear device definition and intended use",
+                "details": "Device must meet specific definition and intended use criteria"
+            }
+        ]
     }
+}
+
+# Additional regulatory data for 21 CFR 880 devices
+FDA_DEVICES = {
+    "regulations": [
+        {
+            "id": "21-CFR-880.5075",
+            "name": "Elastic Bandage",
+            "classification": "Class I",
+            "controls": "General Controls",
+            "exemptions": ["Premarket Notification (510k)", "Quality System Regulation (Part 820)"],
+            "limitations_reference": "880.9",
+            "full_text": "An elastic bandage is a device consisting of either a long flat strip or a tube of elasticized material that is used to support and compress a part of a patient's body."
+        },
+        {
+            "id": "21-CFR-880.5725",
+            "name": "Infusion Pump",
+            "classification": "Class II",
+            "controls": "Special Controls",
+            "exemptions": [],
+            "full_text": "A device used to decide the amount of fluid to be delivered to a patient and to deliver the fluid under positive pressure."
+        }
+    ]
 }
 
 def analyze_compliance(application_data, regulation_name):
@@ -88,16 +136,45 @@ def analyze_compliance(application_data, regulation_name):
         compliance_score = 0
         findings = []
         
-        # Check for PHI protection
-        if "phi" in req["details"].lower() or "health information" in req["details"].lower():
-            if "encryption" in app_text or "hipaa" in app_text or "secure" in app_text:
-                compliance_score += 50
-                findings.append("Encryption mentioned in infrastructure")
-            if "access" in app_text:
-                compliance_score += 30
-                findings.append("Access controls mentioned")
+        # Check for device classification (21 CFR 880 specific)
+        if regulation_name == "21_CFR_880":
+            if "classification" in req["details"].lower():
+                if "medical" in app_text or "device" in app_text:
+                    compliance_score += 40
+                    findings.append("Medical device classification identified")
+                if "class i" in app_text or "class ii" in app_text or "class iii" in app_text:
+                    compliance_score += 30
+                    findings.append("Device class specified")
+            
+            # Check for regulatory controls
+            if "controls" in req["details"].lower():
+                if "controls" in app_text or "quality" in app_text:
+                    compliance_score += 35
+                    findings.append("Regulatory controls mentioned")
+            
+            # Check for exemptions
+            if "exemptions" in req["details"].lower():
+                if "exempt" in app_text or "510k" in app_text:
+                    compliance_score += 25
+                    findings.append("Exemptions considered")
+            
+            # Check for device definition
+            if "definition" in req["details"].lower():
+                if "intended use" in app_text or "purpose" in app_text:
+                    compliance_score += 30
+                    findings.append("Device definition and intended use specified")
         
-        # Check for technical safeguards
+        # Check for PHI protection (HIPAA specific)
+        if regulation_name == "HIPAA":
+            if "phi" in req["details"].lower() or "health information" in req["details"].lower():
+                if "encryption" in app_text or "hipaa" in app_text or "secure" in app_text:
+                    compliance_score += 50
+                    findings.append("Encryption mentioned in infrastructure")
+                if "access" in app_text:
+                    compliance_score += 30
+                    findings.append("Access controls mentioned")
+        
+        # Check for technical safeguards (HIPAA/FDA specific)
         if "technical" in req["details"].lower() or "security" in req["details"].lower():
             if "aws" in app_text and "hipaa" in app_text:
                 compliance_score += 60
@@ -106,23 +183,36 @@ def analyze_compliance(application_data, regulation_name):
                 compliance_score += 40
                 findings.append("Encryption at rest mentioned")
         
-        # Check for data management
+        # Check for data management (General)
         if "data" in req["details"].lower():
             if "database" in app_text:
                 compliance_score += 30
                 findings.append("Database infrastructure specified")
         
-        # Check for validation/risk
-        if "validation" in req["details"].lower() or "risk" in req["details"].lower():
-            if "severity" in app_text or "score" in app_text:
-                compliance_score += 40
-                findings.append("Scoring system may indicate validation")
+        # Check for validation/risk (FDA Software specific)
+        if regulation_name == "FDA_Software":
+            if "validation" in req["details"].lower() or "risk" in req["details"].lower():
+                if "severity" in app_text or "score" in app_text:
+                    compliance_score += 40
+                    findings.append("Scoring system may indicate validation")
         
-        # Check for documentation
-        if "documentation" in req["details"].lower() or "labeling" in req["details"].lower():
-            if "platform" in app_text or "digital" in app_text:
-                compliance_score += 20
-                findings.append("Digital platform implies documentation")
+        # Check for documentation (FDA Software specific)
+        if regulation_name == "FDA_Software":
+            if "documentation" in req["details"].lower() or "labeling" in req["details"].lower():
+                if "platform" in app_text or "digital" in app_text:
+                    compliance_score += 20
+                    findings.append("Digital platform implies documentation")
+        
+        # Check for consent and data rights (GDPR specific)
+        if regulation_name == "GDPR_Health":
+            if "consent" in req["details"].lower():
+                if "consent" in app_text or "permission" in app_text:
+                    compliance_score += 45
+                    findings.append("Consent mechanisms mentioned")
+            if "access" in req["details"].lower() and "delete" in req["details"].lower():
+                if "export" in app_text or "delete" in app_text:
+                    compliance_score += 35
+                    findings.append("Data access/deletion capabilities")
         
         # Determine compliance level
         if compliance_score >= 70:
@@ -151,6 +241,11 @@ def analyze_compliance(application_data, regulation_name):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/api/fda-devices')
+def get_fda_devices():
+    """Get FDA device classifications"""
+    return jsonify(FDA_DEVICES)
 
 @app.route('/api/regulations')
 def get_regulations():
