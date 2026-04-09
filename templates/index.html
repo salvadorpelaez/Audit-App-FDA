@@ -50,7 +50,17 @@
             margin-bottom: 20px;
         }
 
+        .swipe-hint {
+            display: none;
+            text-align: center;
+            font-size: 0.75em;
+            color: #94a3b8;
+            margin: 6px 0 10px;
+            letter-spacing: 0.3px;
+        }
+
         @media (max-width: 768px) {
+            .swipe-hint { display: block; }
             .input-grid-wrapper {
                 position: relative;
             }
@@ -58,10 +68,9 @@
                 content: '';
                 position: absolute;
                 top: 0; right: 0;
-                width: 40px; height: 100%;
-                background: linear-gradient(to right, transparent, rgba(255,255,255,0.95));
+                width: 48px; height: calc(100% - 24px);
+                background: linear-gradient(to right, transparent, rgba(255,255,255,0.97));
                 pointer-events: none;
-                border-radius: 0 10px 10px 0;
             }
             .input-grid {
                 display: flex;
@@ -70,16 +79,19 @@
                 scroll-snap-type: x mandatory;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
-                gap: 16px;
-                padding-bottom: 8px;
-                padding-right: 32px;
+                gap: 14px;
+                padding-bottom: 4px;
+                padding-right: 40px;
             }
             .input-grid::-webkit-scrollbar { display: none; }
             .panel {
-                min-width: 85vw;
+                min-width: 76vw;
                 scroll-snap-align: start;
                 flex-shrink: 0;
+                padding: 16px;
             }
+            .panel h3 { font-size: 0.9em; }
+            textarea { font-size: 12px; }
         }
 
         .panel {
@@ -420,6 +432,7 @@
             </div>
         </div>
         </div>
+        <p class="swipe-hint">&#8592; swipe to review Regulatory Framework &#8594;</p>
 
         <button class="analyze-btn" id="analyzeBtn" onclick="showDisclaimer()">
             Analyze Compliance
