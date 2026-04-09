@@ -415,8 +415,8 @@
                     <label for="applicationData">Describe your software product:</label>
                     <textarea id="applicationData" rows="13" placeholder="Enter product details in JSON format..."></textarea>
                     <div class="sample-btns">
-                        <button class="btn-sample" onclick="loadSample1()">Load Sample 1 — AxiomTrack</button>
-                        <button class="btn-sample" onclick="loadSample2()">Load Sample 2 — NeuroPulse</button>
+                        <button class="btn-sample" onclick="loadSample1()">Load Sample 1 — SampleApp1</button>
+                        <button class="btn-sample" onclick="loadSample2()">Load Sample 2 — SampleApp2</button>
                     </div>
                 </div>
             </div>
@@ -521,7 +521,7 @@
 
     function loadSample1() {
         document.getElementById('applicationData').value = JSON.stringify({
-            "product_name": "AxiomTrack Mobile",
+            "product_name": "SampleApp1",
             "intended_use": "A digital platform for patients to log inflammation levels and limb swelling. Users can export data logs for physician review.",
             "features": [
                 "Manual input for swelling diameter",
@@ -538,7 +538,7 @@
 
     function loadSample2() {
         document.getElementById('applicationData').value = JSON.stringify({
-            "product_name": "NeuroPulse",
+            "product_name": "SampleApp2",
             "intended_use": "An AI-powered mobile platform for continuous cognitive and mental health monitoring. Designed for clinical use by psychiatrists and neurologists to track patient mood, cognitive load, and behavioral patterns between appointments.",
             "features": [
                 "Daily mood and anxiety self-assessment questionnaires",
