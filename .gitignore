@@ -42,3 +42,7 @@ instance/
 
 # Logs
 *.log
+
+# Environment
+.env
+.env.local
