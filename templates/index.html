@@ -86,9 +86,11 @@
             .input-grid::-webkit-scrollbar { display: none; }
             .panel {
                 min-width: 70vw;
+                max-width: 70vw;
                 scroll-snap-align: start;
                 flex-shrink: 0;
                 padding: 14px;
+                overflow: hidden;
             }
             .panel h3 { font-size: 0.88em; }
             textarea { font-size: 12px; rows: 8; max-height: 180px; }
@@ -433,7 +435,7 @@
                     <li>21 CFR Part 880 — Devices <span class="source-badge live-badge">live eCFR</span></li>
                 </ul>
 
-                <div class="reg-info-box" style="margin-top: 18px; padding: 12px; background: #f0fdf4; border-radius: 7px; border: 1px solid #bbf7d0;">
+                <div class="reg-info-box" style="margin-top: 18px; padding: 12px; background: #f0fdf4; border-radius: 7px; border: 1px solid #bbf7d0; overflow: hidden; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">
                     <p style="font-size: 0.78em; color: #166534;">
                         <strong>Live regulations</strong> are fetched from the official
                         <a href="https://www.ecfr.gov" target="_blank" style="color: #166534;">eCFR API</a> at analysis time.
