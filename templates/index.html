@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FDA Compliance Audit Tool</title>
+    <title>Digital Health Compliance Auditor</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -50,7 +50,37 @@
             margin-bottom: 20px;
         }
 
-        @media (max-width: 700px) { .input-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .input-grid-wrapper {
+                position: relative;
+            }
+            .input-grid-wrapper::after {
+                content: '';
+                position: absolute;
+                top: 0; right: 0;
+                width: 40px; height: 100%;
+                background: linear-gradient(to right, transparent, rgba(255,255,255,0.95));
+                pointer-events: none;
+                border-radius: 0 10px 10px 0;
+            }
+            .input-grid {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                gap: 16px;
+                padding-bottom: 8px;
+                padding-right: 32px;
+            }
+            .input-grid::-webkit-scrollbar { display: none; }
+            .panel {
+                min-width: 85vw;
+                scroll-snap-align: start;
+                flex-shrink: 0;
+            }
+        }
 
         .panel {
             background: #f8f9fb;
@@ -282,12 +312,66 @@
             padding: 16px 0 4px;
             border-top: 1px solid #f1f5f9;
         }
+
+        /* Disclaimer modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 14px;
+            padding: 32px 28px 24px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+        }
+        .modal-box h3 {
+            font-size: 1.05em;
+            color: #0f3460;
+            margin-bottom: 14px;
+        }
+        .modal-box p {
+            font-size: 0.88em;
+            color: #475569;
+            line-height: 1.65;
+            margin-bottom: 22px;
+        }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+        .modal-cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 7px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        .modal-confirm {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 7px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .modal-cancel:hover { background: #e2e8f0; }
+        .modal-confirm:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>FDA Compliance Audit Tool</h1>
+        <h1>Digital Health Compliance Auditor</h1>
         <p>AI-powered analysis against live FDA, HIPAA, and GDPR regulations — powered by Claude Sonnet</p>
     </header>
 
@@ -298,6 +382,7 @@
     </div>
 
     <div class="main-content">
+        <div class="input-grid-wrapper">
         <div class="input-grid">
             <div class="panel">
                 <h3>Product Description (JSON)</h3>
@@ -334,8 +419,9 @@
                 </div>
             </div>
         </div>
+        </div>
 
-        <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">
+        <button class="analyze-btn" id="analyzeBtn" onclick="showDisclaimer()">
             Analyze Compliance
         </button>
 
@@ -350,7 +436,7 @@
             <div class="results-header" id="resultsHeader"></div>
             <div class="req-grid" id="reqGrid"></div>
             <div class="recommendations" id="recsSection"></div>
-            <p class="footer-note">
+            <p class="footer-note" id="footerNote">
                 Analysis performed by Claude Sonnet (Anthropic) against official regulation text.
                 Crafted with Claude Code — <a href="https://salpelaez.vercel.app" target="_blank" style="color: #94a3b8;">salpelaez.vercel.app</a>
             </p>
@@ -358,8 +444,44 @@
     </div>
 </div>
 
+<!-- Disclaimer modal -->
+<div class="modal-overlay" id="disclaimerModal">
+    <div class="modal-box">
+        <h3>Important Notice</h3>
+        <p>
+            <strong>Demo Tool — Not Legal Advice.</strong><br><br>
+            This tool is for portfolio demonstration purposes only.
+            Results are AI-generated and do not constitute legal, regulatory,
+            or compliance advice. Always consult a qualified regulatory affairs
+            professional for actual compliance determinations.
+        </p>
+        <div class="modal-actions">
+            <button class="modal-cancel" onclick="closeDisclaimer()">Cancel</button>
+            <button class="modal-confirm" onclick="acceptDisclaimer()">I Understand — Continue</button>
+        </div>
+    </div>
+</div>
+
 <script>
     window.addEventListener('load', loadRegulations);
+
+    function showDisclaimer() {
+        if (sessionStorage.getItem('disclaimerAccepted')) {
+            runAnalysis();
+        } else {
+            document.getElementById('disclaimerModal').classList.add('active');
+        }
+    }
+
+    function closeDisclaimer() {
+        document.getElementById('disclaimerModal').classList.remove('active');
+    }
+
+    function acceptDisclaimer() {
+        sessionStorage.setItem('disclaimerAccepted', 'true');
+        closeDisclaimer();
+        runAnalysis();
+    }
 
     async function loadRegulations() {
         const res = await fetch('/api/regulations');
