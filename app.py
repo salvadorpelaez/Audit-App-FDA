@@ -1,10 +1,24 @@
 import os
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 load_dotenv()
 
 app = Flask(__name__)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://"
+)
+
+@app.errorhandler(429)
+def rate_limit_exceeded(e):
+    return jsonify({"error": "Rate limit reached — maximum 5 analyses per hour per IP. Please try again later."}), 429
+
 
 REGULATIONS_META = {
     "HIPAA": "HIPAA — Health Insurance Portability and Accountability Act",
@@ -30,6 +44,7 @@ def get_regulations():
 
 
 @app.route('/api/analyze', methods=['POST'])
+@limiter.limit("5 per hour")
 def analyze_application():
     from agents.regulation_fetcher import get_regulation_text
     from agents.compliance_analyst import analyze_compliance
