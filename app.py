@@ -8,6 +8,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
+# In-memory regulation cache — avoids re-fetching on every request
+_regulation_cache = {}
+
 limiter = Limiter(
     get_remote_address,
     app=app,
@@ -60,7 +63,9 @@ def analyze_application():
         if regulation_key not in REGULATIONS_META:
             return jsonify({"error": "Unknown regulation key"})
 
-        regulation = get_regulation_text(regulation_key)
+        if regulation_key not in _regulation_cache:
+            _regulation_cache[regulation_key] = get_regulation_text(regulation_key)
+        regulation = _regulation_cache[regulation_key]
         if not regulation:
             return jsonify({"error": "Could not load regulation text"})
 
@@ -76,6 +81,60 @@ def analyze_application():
             "regulation_live": regulation["live"],
             "application": product,
             "analysis": result["data"]
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+@app.route('/api/compare', methods=['POST'])
+@limiter.limit("5 per hour")
+def compare_sops():
+    from agents.regulation_fetcher import get_regulation_text
+    from agents.sop_analyst import analyze_sop
+    from agents.sop_generator import generate_proposed_sop
+
+    try:
+        data = request.get_json()
+        sop1_text = data.get('sop1', '').strip()
+        sop2_text = data.get('sop2', '').strip()
+        regulation_key = data.get('regulation', '')
+
+        if not sop1_text or not sop2_text or not regulation_key:
+            return jsonify({"error": "Missing SOP1, SOP2, or regulation"})
+
+        if regulation_key not in REGULATIONS_META:
+            return jsonify({"error": "Unknown regulation key"})
+
+        if regulation_key not in _regulation_cache:
+            _regulation_cache[regulation_key] = get_regulation_text(regulation_key)
+        regulation = _regulation_cache[regulation_key]
+        if not regulation:
+            return jsonify({"error": "Could not load regulation text"})
+
+        result1 = analyze_sop(sop1_text, regulation)
+        result2 = analyze_sop(sop2_text, regulation)
+
+        if not result1["success"]:
+            return jsonify({"error": f"SOP1 analysis failed: {result1['error']}"})
+        if not result2["success"]:
+            return jsonify({"error": f"SOP2 analysis failed: {result2['error']}"})
+
+        gaps1 = result1["data"].get("top_gaps", [])
+        gaps2 = result2["data"].get("top_gaps", [])
+
+        proposed = generate_proposed_sop(regulation, gaps1, gaps2)
+        if not proposed["success"]:
+            return jsonify({"error": f"SOP generation failed: {proposed['error']}"})
+
+        return jsonify({
+            "regulation_key": regulation_key,
+            "regulation_title": regulation["title"],
+            "regulation_source": regulation["source"],
+            "regulation_live": regulation["live"],
+            "sop1": result1["data"],
+            "sop2": result2["data"],
+            "proposed_sop": proposed["data"]
         })
 
     except Exception as e:
